@@ -4,13 +4,18 @@ import numpy as np
 
 
 class Creature:
-    def __init__(self, x=0, y=0, color=(255, 0, 0), size=10):
+    def __init__(self, x=0, y=0, color=(255, 0, 0), size=10, shape=None):
         self.x = x
         self.y = y
         self.color = color
-        self.size = size
-        self.azimut = math.pi
+
+        self.azimut = math.pi / 2
         self.v = 1
+        if shape is None:
+            shape = 'circle'
+        self.shape = shape
+        self.size = size
+        self.energy = 100
 
     def update(self):
         vx = self.v * math.sin(self.azimut)
@@ -19,26 +24,51 @@ class Creature:
         self.x += vx
         self.y += vy
 
-        self.azimut += (np.random.random() - 0.5) * math.pi / 5
+        self.azimut += (np.random.random() - 0.5) * math.pi / 50
         self.azimut = math.fmod(self.azimut, 2 * math.pi)
 
-        self.v += (np.random.random() - 0.5) / 10
+        self.v += (np.random.random() - 0.5) / 100
+        self.energy -= 0.01
+
+    def draw(self, screen):
+
+        if self.shape == 'rect':
+            pygame.draw.rect(screen, self.color, (self.x - self.size, self.y - self.size, self.size * 2, self.size * 2))
+
+        elif self.shape == 'circle':
+            pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.size)
+
+        direction_x = int(self.x + self.size * math.sin(self.azimut) * 0.9)
+        direction_y = int(self.y + self.size * math.cos(self.azimut) * 0.9)
+        pygame.draw.circle(screen, (0, 0, 0), (direction_x, direction_y), int(self.size / 2))
+
+        pygame.draw.rect(screen, (255, 255, 255),
+                         (self.x - self.size, self.y - self.size * 1.4, self.size * 2, self.size * 0.3))
+        pygame.draw.rect(screen, (255, 0, 0),
+                         (self.x - self.size, self.y - self.size * 1.4, self.size * 2 * self.energy / 100,
+                          self.size * 0.3))
 
     def boundary_check(self, right_x=None, left_x=None, top_y=None, bottom_y=None):
-        x = self.x
-        y = self.y
-        size = self.size
-        if x + size / 2 > right_x:
-            self.x = 2 * right_x - x - size
+        xmin = self.x - self.size
+        xmax = self.x + self.size
+        ymin = self.y - self.size
+        ymax = self.y + self.size
+
+        if xmax > right_x:
+            c = xmax - right_x
+            self.x -= 2 * c
             self.azimut *= -1
-        if x - size / 2 < left_x:
-            self.x = 2 * left_x - (x - size)
+        if xmin < left_x:
+            c = xmin - left_x
+            self.x -= 2 * c
             self.azimut *= -1
-        if y - size / 2 < top_y:
-            self.y = 2 * top_y - (y - size)
+        if ymin < top_y:
+            c = ymin - top_y
+            self.y -= 2 * c
             self.azimut = math.pi / 2 - (self.azimut - math.pi / 2)
-        if y + size / 2 > bottom_y:
-            self.y = 2 * bottom_y - (y + size)
+        if ymax > bottom_y:
+            c = ymax - bottom_y
+            self.y -= 2 * c
             self.azimut = math.pi / 2 - (self.azimut - math.pi / 2)
 
 
@@ -65,10 +95,40 @@ class Population:
 
     def draw(self, screen):
         for creature in self.creatures:
-            # Redraw screen here.
-            c = self.creatures[creature]
-            pygame.draw.rect(screen, c.color, (c.x - c.size / 4, c.y - c.size / 4, c.size, c.size))
+            self.creatures[creature].draw(screen)
 
     def boundary_check(self, **kwargs):
         for creature in self.creatures:
             self.creatures[creature].boundary_check(**kwargs)
+
+
+class Foods:
+    def __init__(self):
+        self.x = []
+        self.y = []
+        self.energy_content = []
+        self.color = []
+        self.size = []
+        self.blink = []
+
+    def draw(self, screen):
+        for x, y, ec, color, size, blink in zip(self.x, self.y, self.energy_content, self.color, self.size, self.blink):
+            w = blink
+            pygame.draw.rect(screen, color, (x - size, y - size, size * 2, size * 2), w)
+
+    def add_food(self, x=0, y=0, energy_content=10, color=(0, 0, 255), size=5):
+        self.x.append(x)
+        self.y.append(y)
+        self.energy_content.append(energy_content)
+        self.color.append(color)
+        self.size.append(size)
+        self.blink.append(0)
+
+    def update(self, width, height):
+        # produce foodsP
+        if len(self.x) < 10:
+            enough_food = False
+            while not enough_food:
+                self.add_food(x=height * np.random.random(), y=width * np.random.random())
+                if len(self.x) >= 10:
+                    enough_food = True

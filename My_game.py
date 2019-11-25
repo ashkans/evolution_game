@@ -8,10 +8,10 @@ import pygame
 from pygame.locals import *
 
 # My libraries
-from creature import Creature, Population
+from creature import Creature, Population, Foods
 
 
-def update(dt, pop, width, height):
+def update(dt, pop,foods, width, height):
     """
     Update game. Called once per frame.
     dt is the amount of time passed since last frame.
@@ -35,37 +35,44 @@ def update(dt, pop, width, height):
 
     # my updates:
     pop.update()
-    pop.boundary_check(right_x=width-100, left_x=10, top_y=10, bottom_y=height-100)
+    foods.update(width,height)
+    pop.boundary_check(right_x=width, left_x=0, top_y=0, bottom_y=height)
 
 
-def draw(screen, pop, width, height):
+def draw(screen, pop,foods, width, height):
     """
     Draw things to the window. Called once per frame.
     """
     screen.fill((0, 100, 100))  # Fill the screen with black.
 
-    s = pygame.Surface((width - 100, height - 100))  # the size of your rect
-    s.set_alpha(128)  # alpha level
-    s.fill((255, 255, 255))  # this fills the entire surface
-    screen.blit(s, (10, 10))  # (0,0) are the top-left coordinates
-
     pop.draw(screen)
+    foods.draw(screen)
     # Flip the display so that the things we drew actually show up.
     pygame.display.flip()
 
 
 def game_init(width, height):
     pop = Population()
+    foods = Foods()
 
-    for i in range(20):
-        pop.add_creature(x=width * np.random.random(), y=height * np.random.random(), color=np.random.random(3) * 255, size = 30)
 
-    return pop
+    for i in range(5):
+        pop.add_creature(x=height * np.random.random(), y=width * np.random.random(), color=np.random.random(3) * 255,
+                         size=10, shape='rect')
+        pop.add_creature(x=height * np.random.random(), y=width * np.random.random(), color=np.random.random(3) * 255,
+                         size=10, shape='circle')
 
+    for i in range(5):
+        foods.add_food(x=height * np.random.random(), y=width * np.random.random())
+
+
+    return pop, foods
 
 def runPyGame():
+
     # Initialise PyGame.
     pygame.init()
+    #pygame.display.set_mode((1920, 1080))
 
     # Set up the clock. This will tick every frame and thus maintain a relatively constant framerate. Hopefully.
     fps = 60.0
@@ -81,10 +88,10 @@ def runPyGame():
 
     # Main game loop.
     dt = 1 / fps  # dt is the time since last frame.
-    pop = game_init(width, height)
+    pop, foods = game_init(width, height)
     while True:  # Loop forever!
-        update(dt, pop, width, height)  # You can update/draw here, I've just moved the code for neatness.
-        draw(screen, pop, width, height)
+        update(dt, pop,foods, width, height)  # You can update/draw here, I've just moved the code for neatness.
+        draw(screen, pop,foods, width, height)
 
         dt = fpsClock.tick(fps)
 
