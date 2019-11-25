@@ -1,6 +1,7 @@
 import math
 import pygame
 import numpy as np
+from helper import check_eat
 
 
 class Creature:
@@ -28,7 +29,7 @@ class Creature:
         self.azimut = math.fmod(self.azimut, 2 * math.pi)
 
         self.v += (np.random.random() - 0.5) / 100
-        self.energy -= 0.01
+        self.energy -= 0.05
 
     def draw(self, screen):
 
@@ -71,7 +72,11 @@ class Creature:
             self.y -= 2 * c
             self.azimut = math.pi / 2 - (self.azimut - math.pi / 2)
 
+    def eat(self, energy):
+        self.energy += energy
 
+
+# TODO wrap all updates with a single update function.
 class Population:
     def __init__(self):
         self.creatures = {}
@@ -89,9 +94,18 @@ class Population:
 
         self.creatures[full_name] = Creature(**kwargs)
 
-    def update(self):
+    def update_pos(self):
         for creature in self.creatures:
             self.creatures[creature].update()
+
+    def update_energy(self, foods):
+        # check if any creature has eaten food.
+        check_eat(self, foods)
+
+        for food in foods.contents:
+            for c in food.eaten_by:
+                self.creatures[c].eat(food.energy_content / len(food.eaten_by))
+        foods.remove_eaten()
 
     def draw(self, screen):
         for creature in self.creatures:
@@ -101,34 +115,50 @@ class Population:
         for creature in self.creatures:
             self.creatures[creature].boundary_check(**kwargs)
 
+    def update_death_and_born(self):
+        to_be_del = []
+        for c in self.creatures:
+            if self.creatures[c].energy < 0:
+                to_be_del.append(c)
+        for c in to_be_del:
+            del self.creatures[c]
+
+
+class Food:
+    def __init__(self, x=0, y=0, energy_content=10, color=(0, 0, 255), size=5):
+        self.x = x
+        self.y = y
+        self.energy_content = energy_content
+        self.color = color
+        self.size = size
+        self.blink = 0
+        self.eaten_by = []
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, (self.x - self.size, self.y - self.size, self.size * 2, self.size * 2),
+                         self.blink)
+
 
 class Foods:
     def __init__(self):
-        self.x = []
-        self.y = []
-        self.energy_content = []
-        self.color = []
-        self.size = []
-        self.blink = []
+        self.contents = []
 
     def draw(self, screen):
-        for x, y, ec, color, size, blink in zip(self.x, self.y, self.energy_content, self.color, self.size, self.blink):
-            w = blink
-            pygame.draw.rect(screen, color, (x - size, y - size, size * 2, size * 2), w)
+        for food in self.contents:
+            food.draw(screen)
 
     def add_food(self, x=0, y=0, energy_content=10, color=(0, 0, 255), size=5):
-        self.x.append(x)
-        self.y.append(y)
-        self.energy_content.append(energy_content)
-        self.color.append(color)
-        self.size.append(size)
-        self.blink.append(0)
+        self.contents.append(Food(x, y, energy_content, color, size))
+        print('food is added!')
 
     def update(self, width, height):
         # produce foodsP
-        if len(self.x) < 10:
+        if len(self.contents) < 20:
             enough_food = False
             while not enough_food:
-                self.add_food(x=height * np.random.random(), y=width * np.random.random())
-                if len(self.x) >= 10:
+                self.add_food(x=width * np.random.random(), y=height * np.random.random())
+                if len(self.contents) >= 20:
                     enough_food = True
+
+    def remove_eaten(self):
+        self.contents = [food for food in self.contents if len(food.eaten_by) == 0]

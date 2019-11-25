@@ -9,6 +9,7 @@ from pygame.locals import *
 
 # My libraries
 from creature import Creature, Population, Foods
+from helper import check_eat
 
 
 def update(dt, pop,foods, width, height):
@@ -34,9 +35,13 @@ def update(dt, pop,foods, width, height):
         # Handle other events as you wish.
 
     # my updates:
-    pop.update()
-    foods.update(width,height)
+    pop.update_pos()
+    foods.update(width, height)
     pop.boundary_check(right_x=width, left_x=0, top_y=0, bottom_y=height)
+
+
+    pop.update_energy(foods)
+    pop.update_death_and_born()
 
 
 def draw(screen, pop,foods, width, height):
@@ -57,9 +62,9 @@ def game_init(width, height):
 
 
     for i in range(5):
-        pop.add_creature(x=height * np.random.random(), y=width * np.random.random(), color=np.random.random(3) * 255,
+        pop.add_creature(x=width * np.random.random(), y=height * np.random.random(), color=np.random.random(3) * 255,
                          size=10, shape='rect')
-        pop.add_creature(x=height * np.random.random(), y=width * np.random.random(), color=np.random.random(3) * 255,
+        pop.add_creature(x=width * np.random.random(), y=height * np.random.random(), color=np.random.random(3) * 255,
                          size=10, shape='circle')
 
     for i in range(5):
