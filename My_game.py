@@ -12,7 +12,7 @@ from creature import Creature, Population, Foods
 from helper import check_eat
 
 
-def update(dt, pop,foods, width, height):
+def update(dt, pop, foods, width, height):
     """
     Update game. Called once per frame.
     dt is the amount of time passed since last frame.
@@ -35,33 +35,35 @@ def update(dt, pop,foods, width, height):
         # Handle other events as you wish.
 
     # my updates:
-    pop.update_pos()
+    pop.update_pos(foods)
     foods.update(width, height)
     pop.boundary_check(right_x=width, left_x=0, top_y=0, bottom_y=height)
-
 
     pop.update_energy(foods)
     pop.update_death_and_born()
 
 
-def draw(screen, pop,foods, width, height):
+def draw(screen, pop, foods, width, height):
     """
     Draw things to the window. Called once per frame.
     """
-    screen.fill((0, 100, 100))  # Fill the screen with black.
+    screen.fill((150, 150, 150))  # Fill the screen with black.
 
     pop.draw(screen)
     foods.draw(screen)
+
+
     # Flip the display so that the things we drew actually show up.
     pygame.display.flip()
+
+
 
 
 def game_init(width, height):
     pop = Population()
     foods = Foods()
 
-
-    for i in range(5):
+    for i in range(2):
         pop.add_creature(x=width * np.random.random(), y=height * np.random.random(), color=np.random.random(3) * 255,
                          size=10, shape='rect')
         pop.add_creature(x=width * np.random.random(), y=height * np.random.random(), color=np.random.random(3) * 255,
@@ -70,14 +72,12 @@ def game_init(width, height):
     for i in range(5):
         foods.add_food(x=height * np.random.random(), y=width * np.random.random())
 
-
     return pop, foods
 
-def runPyGame():
 
+def runPyGame():
     # Initialise PyGame.
     pygame.init()
-    #pygame.display.set_mode((1920, 1080))
 
     # Set up the clock. This will tick every frame and thus maintain a relatively constant framerate. Hopefully.
     fps = 60.0
@@ -95,8 +95,8 @@ def runPyGame():
     dt = 1 / fps  # dt is the time since last frame.
     pop, foods = game_init(width, height)
     while True:  # Loop forever!
-        update(dt, pop,foods, width, height)  # You can update/draw here, I've just moved the code for neatness.
-        draw(screen, pop,foods, width, height)
+        update(dt, pop, foods, width, height)  # You can update/draw here, I've just moved the code for neatness.
+        draw(screen, pop, foods, width, height)
 
         dt = fpsClock.tick(fps)
 

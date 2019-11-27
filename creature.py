@@ -1,7 +1,10 @@
 import math
 import pygame
 import numpy as np
+
 from helper import check_eat
+from creature_ai import ai_wrapper
+from creature_eye import eye_wrapper
 
 
 class Creature:
@@ -9,29 +12,49 @@ class Creature:
         self.x = x
         self.y = y
         self.color = color
-
-        self.azimut = math.pi / 2
+        self.azimuth = math.pi / 2
         self.v = 1
         if shape is None:
             shape = 'circle'
         self.shape = shape
         self.size = size
         self.energy = 100
+        self.ai = 'dumb'
 
-    def update(self):
-        vx = self.v * math.sin(self.azimut)
-        vy = self.v * math.cos(self.azimut)
+        self.view = []  # this is a list of objects (food, and/or other creatures).
+        self.sight = 0
+        self.eye = 'blind2'
+
+        # Energy consumptions
+        self.basic_ec = 0.05
+        self.seeing_ec = 0
+        self.total_ec = self.basic_ec + self.seeing_ec
+
+    def update(self, pop, foods):  # for later food and pop should be changed to a shadow of these two object with just
+        # observable attributes!
+        ai_wrapper(self)
+        eye_wrapper(self, pop, foods)
+
+        vx = self.v * math.sin(self.azimuth)
+        vy = self.v * math.cos(self.azimuth)
 
         self.x += vx
         self.y += vy
 
-        self.azimut += (np.random.random() - 0.5) * math.pi / 50
-        self.azimut = math.fmod(self.azimut, 2 * math.pi)
-
-        self.v += (np.random.random() - 0.5) / 100
-        self.energy -= 0.05
+        self.total_ec = self.basic_ec + self.seeing_ec
+        self.energy -= self.total_ec
 
     def draw(self, screen):
+
+        # this part can move to draw function of the population to reduce plotting burden, there all of the plotting
+        # will be done in a single surface.
+        # == Plotting the sight =========
+        h = screen.get_height()
+        w = screen.get_width()
+        s = pygame.Surface((w, h), pygame.SRCALPHA)  # per-pixel alpha
+        pygame.draw.circle(s, (255, 255, 255, 20), (int(self.x), int(self.y)), int(self.sight))
+        screen.blit(s, (0, 0))
+        # ===============================
 
         if self.shape == 'rect':
             pygame.draw.rect(screen, self.color, (self.x - self.size, self.y - self.size, self.size * 2, self.size * 2))
@@ -39,8 +62,8 @@ class Creature:
         elif self.shape == 'circle':
             pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.size)
 
-        direction_x = int(self.x + self.size * math.sin(self.azimut) * 0.9)
-        direction_y = int(self.y + self.size * math.cos(self.azimut) * 0.9)
+        direction_x = int(self.x + self.size * math.sin(self.azimuth) * 0.9)
+        direction_y = int(self.y + self.size * math.cos(self.azimuth) * 0.9)
         pygame.draw.circle(screen, (0, 0, 0), (direction_x, direction_y), int(self.size / 2))
 
         pygame.draw.rect(screen, (255, 255, 255),
@@ -48,6 +71,9 @@ class Creature:
         pygame.draw.rect(screen, (255, 0, 0),
                          (self.x - self.size, self.y - self.size * 1.4, self.size * 2 * self.energy / 100,
                           self.size * 0.3))
+
+        # draw sight
+
 
     def boundary_check(self, right_x=None, left_x=None, top_y=None, bottom_y=None):
         xmin = self.x - self.size
@@ -58,19 +84,19 @@ class Creature:
         if xmax > right_x:
             c = xmax - right_x
             self.x -= 2 * c
-            self.azimut *= -1
+            self.azimuth *= -1
         if xmin < left_x:
             c = xmin - left_x
             self.x -= 2 * c
-            self.azimut *= -1
+            self.azimuth *= -1
         if ymin < top_y:
             c = ymin - top_y
             self.y -= 2 * c
-            self.azimut = math.pi / 2 - (self.azimut - math.pi / 2)
+            self.azimuth = math.pi / 2 - (self.azimuth - math.pi / 2)
         if ymax > bottom_y:
             c = ymax - bottom_y
             self.y -= 2 * c
-            self.azimut = math.pi / 2 - (self.azimut - math.pi / 2)
+            self.azimuth = math.pi / 2 - (self.azimuth - math.pi / 2)
 
     def eat(self, energy):
         self.energy += energy
@@ -94,9 +120,9 @@ class Population:
 
         self.creatures[full_name] = Creature(**kwargs)
 
-    def update_pos(self):
+    def update_pos(self, foods):
         for creature in self.creatures:
-            self.creatures[creature].update()
+            self.creatures[creature].update(self, foods)
 
     def update_energy(self, foods):
         # check if any creature has eaten food.
