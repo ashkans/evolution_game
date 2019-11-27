@@ -12,25 +12,26 @@ SCALE = settings.SCALE
 
 
 class Creature:
-    def __init__(self, x=0, y=0, color=(255, 0, 0), size=10, shape=None):
+    def __init__(self, x=0, y=0, color=(255, 0, 0), size=10, shape=None, energy=100, azimuth=math.pi / 2,
+                 eye='see_foods_loc', v=1, sight = 0):
         self.x = x
         self.y = y
         self.color = color
-        self.azimuth = math.pi / 2
-        self.v = 1
+        self.azimuth = azimuth
+        self.v = v
         if shape is None:
             shape = 'circle'
         self.shape = shape
         self.size = size
-        self.energy = 100
-        self.ai = 'dumb'
+        self.energy = energy
+        self.ai = 'donkey'
 
         self.view = []  # this is a list of objects (food, and/or other creatures).
-        self.sight = 0
-        self.eye = 'blind2'
+        self.sight = sight
+        self.eye = eye
 
         # Energy consumptions
-        self.basic_ec = 0.05
+        self.basic_ec = 0
         self.seeing_ec = 0
         self.total_ec = self.basic_ec + self.seeing_ec
 
@@ -46,7 +47,7 @@ class Creature:
         self.x += vx
         self.y += vy
 
-        self.total_ec = self.basic_ec + self.seeing_ec
+        self.total_ec = (self.basic_ec + self.seeing_ec) * dt / 30
         self.energy -= self.total_ec
 
     def draw(self, screen):
@@ -134,6 +135,12 @@ class Population:
 
         self.creatures[full_name] = Creature(**kwargs)
 
+    def regenerate_monosexual(self, creature, full_name):  # TODO This should be moved to a new py file
+
+        self.add_creature(full_name, x=creature.x, y=creature.y, color=creature.color, shape=creature.shape,
+                          size=creature.size, energy=50, azimuth=np.random.random() * 2 * math.pi, eye=creature.eye,
+                          v=creature.v, sight=creature.sight + (np.random.random()-0.5) * 20)
+
     def update_pos(self, dt, foods):
         for creature in self.creatures:
             self.creatures[creature].update(dt, self, foods)
@@ -157,11 +164,21 @@ class Population:
 
     def update_death_and_born(self):
         to_be_del = []
+        to_regenerate = []
         for c in self.creatures:
             if self.creatures[c].energy < 0:
                 to_be_del.append(c)
+            elif self.creatures[c].energy > 100:
+                self.creatures[c].energy = 50
+                to_regenerate.append(c)
+
         for c in to_be_del:
             del self.creatures[c]
+
+        for c in to_regenerate:
+            self.regenerate_monosexual(self.creatures[c], c)
+
+        # Born
 
 
 class Food:
@@ -182,6 +199,7 @@ class Food:
 class Foods:
     def __init__(self):
         self.contents = []
+        self.time_from_last_production = 0
 
     def draw(self, screen):
         for food in self.contents:
@@ -191,14 +209,22 @@ class Foods:
         self.contents.append(Food(x, y, energy_content, color, size))
         print('food is added!')
 
-    def update(self, width, height):
+    def update(self, dt, width, height):
+        self.time_from_last_production += dt
         # produce foodsP
-        if len(self.contents) < 20:
-            enough_food = False
-            while not enough_food:
-                self.add_food(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE)
-                if len(self.contents) >= 20:
-                    enough_food = True
+        if self.time_from_last_production > 700:
+            self.time_from_last_production -= 700
+            self.add_food(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE)
+
+
+
+
+        # if len(self.contents) < 20:
+        #     enough_food = False
+        #     while not enough_food:
+        #         self.add_food(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE)
+        #         if len(self.contents) >= 20:
+        #             enough_food = True
 
     def remove_eaten(self):
         self.contents = [food for food in self.contents if len(food.eaten_by) == 0]

@@ -40,7 +40,7 @@ def update(dt, pop, foods, width, height):
 
     # my updates:
     pop.update_pos(dt, foods)
-    foods.update(width, height)
+    foods.update(dt, width, height)
     pop.boundary_check(right_x=width, left_x=0, top_y=0, bottom_y=height)
 
     pop.update_energy(foods)
@@ -64,11 +64,15 @@ def game_init(width, height):
     pop = Population()
     foods = Foods()
 
-    for i in range(2):
-        pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE, color=np.random.random(3) * 255,
-                         size=10, shape='rect')
-        pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE, color=np.random.random(3) * 255,
-                         size=10, shape='circle')
+    for i in range(0):
+        pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE,
+                         color=np.random.random(3) * 255,
+                         size=10, shape='rect', eye='see_foods_loc', sight=100)
+
+    for i in range(5):
+        pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE,
+                         color=np.random.random(3) * 255,
+                         size=10, shape='circle', eye='see_foods_loc2', sight=50)
 
     return pop, foods
 
