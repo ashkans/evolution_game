@@ -11,6 +11,10 @@ from pygame.locals import *
 from creature import Creature, Population, Foods
 from helper import check_eat
 
+import settings
+
+SCALE = settings.SCALE
+
 
 def update(dt, pop, foods, width, height):
     """
@@ -35,7 +39,7 @@ def update(dt, pop, foods, width, height):
         # Handle other events as you wish.
 
     # my updates:
-    pop.update_pos(foods)
+    pop.update_pos(dt, foods)
     foods.update(width, height)
     pop.boundary_check(right_x=width, left_x=0, top_y=0, bottom_y=height)
 
@@ -52,11 +56,8 @@ def draw(screen, pop, foods, width, height):
     pop.draw(screen)
     foods.draw(screen)
 
-
     # Flip the display so that the things we drew actually show up.
     pygame.display.flip()
-
-
 
 
 def game_init(width, height):
@@ -64,13 +65,10 @@ def game_init(width, height):
     foods = Foods()
 
     for i in range(2):
-        pop.add_creature(x=width * np.random.random(), y=height * np.random.random(), color=np.random.random(3) * 255,
+        pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE, color=np.random.random(3) * 255,
                          size=10, shape='rect')
-        pop.add_creature(x=width * np.random.random(), y=height * np.random.random(), color=np.random.random(3) * 255,
+        pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE, color=np.random.random(3) * 255,
                          size=10, shape='circle')
-
-    for i in range(5):
-        foods.add_food(x=height * np.random.random(), y=width * np.random.random())
 
     return pop, foods
 
@@ -84,7 +82,7 @@ def runPyGame():
     fpsClock = pygame.time.Clock()
 
     # Set up the window.
-    width, height = 640, 480
+    width, height = int(640 * SCALE), int(480 * SCALE)
     screen = pygame.display.set_mode((width, height))
 
     # screen is the surface representing the window.

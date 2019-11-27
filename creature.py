@@ -6,6 +6,10 @@ from helper import check_eat
 from creature_ai import ai_wrapper
 from creature_eye import eye_wrapper
 
+import settings
+
+SCALE = settings.SCALE
+
 
 class Creature:
     def __init__(self, x=0, y=0, color=(255, 0, 0), size=10, shape=None):
@@ -30,13 +34,14 @@ class Creature:
         self.seeing_ec = 0
         self.total_ec = self.basic_ec + self.seeing_ec
 
-    def update(self, pop, foods):  # for later food and pop should be changed to a shadow of these two object with just
+    def update(self, dt, pop, foods):  # for later food and pop should be changed to a shadow of these two object
+        # with just
         # observable attributes!
         ai_wrapper(self)
         eye_wrapper(self, pop, foods)
 
-        vx = self.v * math.sin(self.azimuth)
-        vy = self.v * math.cos(self.azimuth)
+        vx = self.v * dt / 30 * math.sin(self.azimuth)
+        vy = self.v * dt / 30 * math.cos(self.azimuth)
 
         self.x += vx
         self.y += vy
@@ -52,34 +57,43 @@ class Creature:
         h = screen.get_height()
         w = screen.get_width()
         s = pygame.Surface((w, h), pygame.SRCALPHA)  # per-pixel alpha
-        pygame.draw.circle(s, (255, 255, 255, 20), (int(self.x), int(self.y)), int(self.sight))
+        pygame.draw.circle(s, (255, 255, 255, 20), (int(self.x * SCALE), int(self.y * SCALE)), int(self.sight * SCALE))
         screen.blit(s, (0, 0))
         # ===============================
 
         if self.shape == 'rect':
-            pygame.draw.rect(screen, self.color, (self.x - self.size, self.y - self.size, self.size * 2, self.size * 2))
+            pygame.draw.rect(screen, self.color,
+                             ((self.x - self.size) * SCALE, (self.y - self.size) * SCALE,
+                              self.size * 2 * SCALE, self.size * 2 * SCALE))
 
         elif self.shape == 'circle':
-            pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.size)
+            pygame.draw.circle(screen, self.color, (int(self.x * SCALE), int(self.y * SCALE)), int(self.size * SCALE))
 
-        direction_x = int(self.x + self.size * math.sin(self.azimuth) * 0.9)
-        direction_y = int(self.y + self.size * math.cos(self.azimuth) * 0.9)
-        pygame.draw.circle(screen, (0, 0, 0), (direction_x, direction_y), int(self.size / 2))
+        direction_x = int((self.x + self.size * math.sin(self.azimuth) * 0.9) * SCALE)
+        direction_y = int((self.y + self.size * math.cos(self.azimuth) * 0.9) * SCALE)
+        pygame.draw.circle(screen, (0, 0, 0), (direction_x, direction_y), int(self.size / 2 * SCALE))
 
         pygame.draw.rect(screen, (255, 255, 255),
-                         (self.x - self.size, self.y - self.size * 1.4, self.size * 2, self.size * 0.3))
+                         ((self.x - self.size) * SCALE, (self.y - self.size * 1.4) * SCALE, self.size * 2 * SCALE,
+                          self.size * 0.3 * SCALE))
         pygame.draw.rect(screen, (255, 0, 0),
-                         (self.x - self.size, self.y - self.size * 1.4, self.size * 2 * self.energy / 100,
-                          self.size * 0.3))
+                         ((self.x - self.size) * SCALE, (self.y - self.size * 1.4) * SCALE,
+                          self.size * 2 * self.energy / 100 * SCALE,
+                          self.size * 0.3 * SCALE))
 
         # draw sight
-
+        # draw sight
 
     def boundary_check(self, right_x=None, left_x=None, top_y=None, bottom_y=None):
         xmin = self.x - self.size
         xmax = self.x + self.size
         ymin = self.y - self.size
         ymax = self.y + self.size
+
+        right_x /= SCALE
+        left_x /= SCALE
+        top_y /= SCALE
+        bottom_y /= SCALE
 
         if xmax > right_x:
             c = xmax - right_x
@@ -120,9 +134,9 @@ class Population:
 
         self.creatures[full_name] = Creature(**kwargs)
 
-    def update_pos(self, foods):
+    def update_pos(self, dt, foods):
         for creature in self.creatures:
-            self.creatures[creature].update(self, foods)
+            self.creatures[creature].update(dt, self, foods)
 
     def update_energy(self, foods):
         # check if any creature has eaten food.
@@ -161,8 +175,8 @@ class Food:
         self.eaten_by = []
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x - self.size, self.y - self.size, self.size * 2, self.size * 2),
-                         self.blink)
+        pygame.draw.rect(screen, self.color, ((self.x - self.size) * SCALE, (self.y - self.size) * SCALE,
+                                              self.size * 2 * SCALE, self.size * 2 * SCALE), self.blink)
 
 
 class Foods:
@@ -182,7 +196,7 @@ class Foods:
         if len(self.contents) < 20:
             enough_food = False
             while not enough_food:
-                self.add_food(x=width * np.random.random(), y=height * np.random.random())
+                self.add_food(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE)
                 if len(self.contents) >= 20:
                     enough_food = True
 

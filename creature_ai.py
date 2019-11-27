@@ -11,7 +11,7 @@ def ai_wrapper(c, **kwargs):
 
 
 def dumb(c, **kwargs):
-    c.azimuth += (np.random.random() - 0.5) * math.pi / 50
+    c.azimuth += (np.random.random() - 0.5) * math.pi / 500000
     c.azimuth = math.fmod(c.azimuth, 2 * math.pi)
     c.v += (np.random.random() - 0.5) / 100
 
