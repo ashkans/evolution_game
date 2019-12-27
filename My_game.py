@@ -3,6 +3,13 @@
 # Import standard modules.
 import sys
 import numpy as np
+
+import matplotlib
+import matplotlib.backends.backend_agg as agg
+import matplotlib.pyplot as plt
+
+matplotlib.use("Agg")
+
 # Import non-standard modules.
 import pygame
 from pygame.locals import *
@@ -14,6 +21,8 @@ from helper import check_eat
 import settings
 
 SCALE = settings.SCALE
+SPEED = settings.SPEED
+DOMAIN_SCALE = settings.DOMAIN_SCALE
 
 
 def update(dt, pop, foods, width, height):
@@ -60,11 +69,23 @@ def draw(screen, pop, foods, width, height):
     pygame.display.flip()
 
 
+def draw_screen(screen, pop, foods, width, height):
+    fig = plt.figure(figsize=[4, 4], dpi=100)
+    plt.plot(np.random.random(10), np.random.random(10), '.')
+    canvas = agg.FigureCanvasAgg(fig)
+    canvas.draw()
+    renderer = canvas.get_renderer()
+    raw_data = renderer.tostring_rgb()
+    surf = pygame.image.fromstring(raw_data, (400, 400), "RGB")
+    screen.blit(surf, (0, 0))
+    pygame.display.flip()
+
+
 def game_init(width, height):
     pop = Population()
     foods = Foods()
 
-    for i in range(0):
+    for i in range(5):
         pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE,
                          color=np.random.random(3) * 255,
                          size=10, shape='rect', eye='see_foods_loc', sight=100)
@@ -72,8 +93,9 @@ def game_init(width, height):
     for i in range(5):
         pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE,
                          color=np.random.random(3) * 255,
-                         size=10, shape='circle', eye='see_foods_loc2', sight=50)
-
+                         size=10, shape='circle', eye='see_foods_loc2', sight=25)
+    for i in range(500):
+        foods.add_food(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE)
     return pop, foods
 
 
@@ -86,21 +108,23 @@ def runPyGame():
     fpsClock = pygame.time.Clock()
 
     # Set up the window.
-    width, height = int(640 * SCALE), int(480 * SCALE)
+    width, height = int(640 * SCALE * DOMAIN_SCALE), int(480 * SCALE * DOMAIN_SCALE)
     screen = pygame.display.set_mode((width, height))
+    # plotting_screen = pygame.display.set_mode((width, height))
 
     # screen is the surface representing the window.
     # PyGame surfaces can be thought of as screen sections that you can draw onto.
     # You can also draw surfaces onto other surfaces, rotate surfaces, and transform surfaces.
 
     # Main game loop.
-    dt = 1 / fps  # dt is the time since last frame.
+    dt = 1 / fps * SPEED# dt is the time since last frame.
     pop, foods = game_init(width, height)
     while True:  # Loop forever!
         update(dt, pop, foods, width, height)  # You can update/draw here, I've just moved the code for neatness.
         draw(screen, pop, foods, width, height)
+        #draw_screen(screen, pop, foods, width, height)
 
-        dt = fpsClock.tick(fps)
+        dt = fpsClock.tick(fps) * SPEED
 
 
 runPyGame()

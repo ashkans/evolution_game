@@ -9,11 +9,12 @@ from creature_eye import eye_wrapper
 import settings
 
 SCALE = settings.SCALE
+SPEED = settings.SPEED
 
 
 class Creature:
     def __init__(self, x=0, y=0, color=(255, 0, 0), size=10, shape=None, energy=100, azimuth=math.pi / 2,
-                 eye='see_foods_loc', v=1, sight = 0):
+                 eye='see_foods_loc', v=1, sight=0):
         self.x = x
         self.y = y
         self.color = color
@@ -33,7 +34,8 @@ class Creature:
         # Energy consumptions
         self.basic_ec = 0
         self.seeing_ec = 0
-        self.total_ec = self.basic_ec + self.seeing_ec
+        self.speed_ec = 0
+        self.total_ec = self.basic_ec + self.seeing_ec + self.speed_ec
 
     def update(self, dt, pop, foods):  # for later food and pop should be changed to a shadow of these two object
         # with just
@@ -47,7 +49,10 @@ class Creature:
         self.x += vx
         self.y += vy
 
-        self.total_ec = (self.basic_ec + self.seeing_ec) * dt / 30
+        self.seeing_ec = self.sight / 5e3
+        self.speed_ec = self.v / 1e2
+
+        self.total_ec = (self.basic_ec + self.seeing_ec + self.speed_ec) * dt / 30
         self.energy -= self.total_ec
 
     def draw(self, screen):
@@ -136,10 +141,10 @@ class Population:
         self.creatures[full_name] = Creature(**kwargs)
 
     def regenerate_monosexual(self, creature, full_name):  # TODO This should be moved to a new py file
-
+        sight = max(creature.sight + (np.random.random() - 0.5) * 20, 0)
         self.add_creature(full_name, x=creature.x, y=creature.y, color=creature.color, shape=creature.shape,
                           size=creature.size, energy=50, azimuth=np.random.random() * 2 * math.pi, eye=creature.eye,
-                          v=creature.v, sight=creature.sight + (np.random.random()-0.5) * 20)
+                          v=creature.v, sight=sight)
 
     def update_pos(self, dt, foods):
         for creature in self.creatures:
@@ -212,12 +217,9 @@ class Foods:
     def update(self, dt, width, height):
         self.time_from_last_production += dt
         # produce foodsP
-        if self.time_from_last_production > 700:
-            self.time_from_last_production -= 700
+        if self.time_from_last_production > 500:
+            self.time_from_last_production -= 500
             self.add_food(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE)
-
-
-
 
         # if len(self.contents) < 20:
         #     enough_food = False

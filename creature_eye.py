@@ -27,7 +27,7 @@ def blind2(c, pop, foods, **kwargs):
 def see_foods_loc(c, pop, foods, **kwargs):
     if c.sight < 0:
         c.sight = 0
-    c.seeing_ec = c.sight / 1e3
+    #c.seeing_ec = c.sight / 1e3
 
     c.view = []
     for food in foods.contents:
@@ -38,7 +38,7 @@ def see_foods_loc(c, pop, foods, **kwargs):
 def see_foods_loc2(c, pop, foods, **kwargs):
     if c.sight < 0:
         c.sight = 0
-    c.seeing_ec = c.sight / 1e3
+    #c.seeing_ec = c.sight / 1e3
 
     c.view = []
     for food in foods.contents:

@@ -2,7 +2,6 @@ import numpy as np
 import math
 
 
-
 def ai_wrapper(c, **kwargs):
     ai_dict = {'dumb': dumb,
                'dumb2': dumb2,
@@ -25,7 +24,6 @@ def dumb2(c, **kwargs):
 
 
 def donkey(c, **kwargs):
-
     if len(c.view) == 0:
         c.azimuth += (np.random.random() - 0.5) * math.pi / 50
         c.azimuth = math.fmod(c.azimuth, 2 * math.pi)
@@ -40,12 +38,7 @@ def donkey(c, **kwargs):
             if dist < min_dist:
                 min_dist = dist
                 nearest_food = food
-
-
-        c.azimuth = math.atan((nearest_food.x-c.x)/(nearest_food.y-c.y))
-        if (c.y-nearest_food.y) > 0:
+        if (nearest_food.y - c.y) != 0:
+            c.azimuth = math.atan((nearest_food.x - c.x) / (nearest_food.y - c.y))
+        if (c.y - nearest_food.y) > 0:
             c.azimuth += math.pi
-
-        print(c.azimuth)
-
-
