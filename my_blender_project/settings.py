@@ -1,4 +1,4 @@
-BASE_PATH = r"C:\Users\ashka\Documnents\git\myblender_project"
+BASE_PATH = r"C:\Users\ashka\Documnents\git\evolution_game\myblender_project"
 DEFAULT_SCENE_DURATION = 150
 
 import os

@@ -4,9 +4,9 @@ import os
 import importlib
 import bpy
 
-
-BASE_PATH = r"C:\Users\ashka\Documents\git\my_blender_project"
-sys.path.append(BASE_PATH)
+BASE_PATH = r"C:\Users\ashka\Documents\git\evolution_game"
+BASE_PATH_blender = os.path.join(BASE_PATH, "my_blender_project")
+sys.path.append(BASE_PATH_blender)
 
 import settings
 
@@ -54,9 +54,10 @@ floor_Bobject.add_to_blender(appear_time=-1, animate=False)
 apply_material(floor_Bobject.ref_obj.children[0], 'color1')
 
 
+log_folder = os.path.join(BASE_PATH, 'log_files')
 
 koonderazan = []
-for i in range(20):
+for i in range(72):
     koonderazan.append(Gholam())
-    koonderazan[-1].add_to_blender(appear_time=-1, animate=True)
-    koonderazan[-1].gol_gasht()
+
+    koonderazan[-1].from_log_file(os.path.join(log_folder, '%d_log.csv' % i))

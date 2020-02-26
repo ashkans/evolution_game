@@ -3,10 +3,12 @@
 # Import standard modules.
 import sys
 import numpy as np
-
+import pandas as pd
 import matplotlib
 import matplotlib.backends.backend_agg as agg
 import matplotlib.pyplot as plt
+from os.path import join
+import os
 
 matplotlib.use("Agg")
 
@@ -18,14 +20,17 @@ from pygame.locals import *
 from creature import Creature, Population, Foods
 from helper import check_eat
 
+from Logger import Logger
+
 import settings
 
 SCALE = settings.SCALE
 SPEED = settings.SPEED
 DOMAIN_SCALE = settings.DOMAIN_SCALE
+BASE_WIDTH = settings.BASE_WIDTH
+BASE_HEIGHT = settings.BASE_HEIGHT
 
-
-def update(dt, pop, foods, width, height):
+def update(t, dt, pop, foods, width, height):
     """
     Update game. Called once per frame.
     dt is the amount of time passed since last frame.
@@ -48,12 +53,12 @@ def update(dt, pop, foods, width, height):
         # Handle other events as you wish.
 
     # my updates:
-    pop.update_pos(dt, foods)
-    foods.update(dt, width, height)
+    pop.update_pos(t, dt, foods)
+    foods.update(t, dt, width, height)
     pop.boundary_check(right_x=width, left_x=0, top_y=0, bottom_y=height)
 
-    pop.update_energy(foods)
-    pop.update_death_and_born()
+    pop.update_energy(t, dt, foods)
+    pop.update_death_and_born(t)
 
 
 def draw(screen, pop, foods, width, height):
@@ -94,9 +99,21 @@ def game_init(width, height):
         pop.add_creature(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE,
                          color=np.random.random(3) * 255,
                          size=10, shape='circle', eye='see_foods_loc2', sight=25)
-    for i in range(500):
-        foods.add_food(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE)
+    for i in range(settings.INIT_FOODS):
+        foods.add_food(x=width * np.random.random() / SCALE, y=height * np.random.random() / SCALE, t=0)
+
     return pop, foods
+
+
+def game_exit(t, dt, pop, foods, width, height):
+    foods.finalize_history(t)
+    if not os.path.exists(settings.LOG_FOLDER):
+        os.makedirs(settings.LOG_FOLDER)
+    # print(join(settings.LOG_FOLDER, 'food_log.csv'))
+    pd.DataFrame(foods.history, columns=foods.history_list).to_csv(join(settings.LOG_FOLDER, 'food_log.csv'))
+
+    pop.creatures.finalize(t)
+    foods.finalize(t)
 
 
 def runPyGame():
@@ -105,10 +122,12 @@ def runPyGame():
 
     # Set up the clock. This will tick every frame and thus maintain a relatively constant framerate. Hopefully.
     fps = 60.0
+    t = 0
     fpsClock = pygame.time.Clock()
 
     # Set up the window.
-    width, height = int(640 * SCALE * DOMAIN_SCALE), int(480 * SCALE * DOMAIN_SCALE)
+
+    width, height = int(BASE_WIDTH * SCALE * DOMAIN_SCALE), int(BASE_HEIGHT * SCALE * DOMAIN_SCALE)
     screen = pygame.display.set_mode((width, height))
     # plotting_screen = pygame.display.set_mode((width, height))
 
@@ -117,14 +136,21 @@ def runPyGame():
     # You can also draw surfaces onto other surfaces, rotate surfaces, and transform surfaces.
 
     # Main game loop.
-    dt = 1 / fps * SPEED# dt is the time since last frame.
+    dt = 1 / fps * SPEED  # dt is the time since last frame.
+
     pop, foods = game_init(width, height)
     while True:  # Loop forever!
-        update(dt, pop, foods, width, height)  # You can update/draw here, I've just moved the code for neatness.
-        draw(screen, pop, foods, width, height)
-        #draw_screen(screen, pop, foods, width, height)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_exit(t, dt, pop, foods, width, height)
+                pygame.quit()
+                exit()
 
+        update(t, dt, pop, foods, width, height)  # You can update/draw here, I've just moved the code for neatness.
+        draw(screen, pop, foods, width, height)
+        # draw_screen(screen, pop, foods, width, height)
         dt = fpsClock.tick(fps) * SPEED
+        t += dt
 
 
 runPyGame()
