@@ -2,7 +2,7 @@ import os
 
 SCALE = 1
 DOMAIN_SCALE = 1
-SPEED = 1
+SPEED = 10
 LOG_FOLDER = 'log_files'
 BASE_WIDTH = 640
 BASE_HEIGHT = 480

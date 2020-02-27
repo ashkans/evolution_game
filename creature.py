@@ -245,16 +245,16 @@ class Food:
     def remove(self, t):
         _make_empty_folder()
         self.end_time = t
-        self._save_history_in_multiple_files()
+        self.history.append([self.ID, self.end_time, self.x, self.y, self.energy_content])
+        self._save_history_in_a_single_file()
 
     def _save_history_in_multiple_files(self):
-        self.history.append([self.ID, self.end_time, self.x, self.y, self.energy_content])
+
         saving_path = join(settings.LOG_FOLDER, str(self.ID) + '_food_log.csv')
         pd.DataFrame(self.history, columns=self.history_list).to_csv(saving_path)
 
     def _save_history_in_a_single_file(self):
         FOOD_HISTORY.append([self.ID, self.start_time, self.end_time, self.x, self.y, self.energy_content])
-
 
         '''
         self.history.append([self.ID, self.start_time, self.x, self.y, self.energy_content])
@@ -276,7 +276,7 @@ class Foods:
         self.time_from_last_production = 0
         self.color_history = []
         self.history = []
-        self.history_list = ['x', 'y', 'start_time', 'end_time', 'energy_content', 'size']
+        self.history_list = ['ID', 't', 'x', 'y', 'energy_content']
         self.latestID = 0
 
     def draw(self, screen):
@@ -303,9 +303,17 @@ class Foods:
             if len(f.eaten_by) == 0:
                 contents.append(f)
             else:
-                f.remove(t)
+                self._remove_food(f, t)
         self.contents = contents
 
     def finalize(self, t):
         for f in self.contents:
-            self.contents[f].remove(t)
+            self._remove_food(f, t)
+
+        saving_path = join(settings.LOG_FOLDER, 'food_log.csv')
+        pd.DataFrame(self.history, columns=self.history_list).to_csv(saving_path)
+
+    def _remove_food(self, f, t):
+        f.remove(t)
+        self.history += f.history
+

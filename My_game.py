@@ -106,13 +106,13 @@ def game_init(width, height):
 
 
 def game_exit(t, dt, pop, foods, width, height):
-    foods.finalize_history(t)
+
     if not os.path.exists(settings.LOG_FOLDER):
         os.makedirs(settings.LOG_FOLDER)
     # print(join(settings.LOG_FOLDER, 'food_log.csv'))
     pd.DataFrame(foods.history, columns=foods.history_list).to_csv(join(settings.LOG_FOLDER, 'food_log.csv'))
 
-    pop.creatures.finalize(t)
+    pop.finalize(t)
     foods.finalize(t)
 
 
