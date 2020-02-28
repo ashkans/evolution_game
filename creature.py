@@ -51,7 +51,7 @@ class Creature:
         self.speed_ec = 0
         self.total_ec = self.basic_ec + self.seeing_ec + self.speed_ec
         self.history = []
-        self.history_list = ['t', 'x', 'y', 'energy']
+        self.history_list = ['t', 'x', 'y', 'energy', 'sight']
 
     def update(self, t, dt, pop, foods):  # for later food and pop should be changed to a shadow of these two object
         # with just
@@ -71,7 +71,7 @@ class Creature:
         self.total_ec = (self.basic_ec + self.seeing_ec + self.speed_ec) * dt / 30
         self.energy -= self.total_ec
 
-        self.history.append([t / 1e3, self.x / HEIGHT, self.y / WIDTH, self.energy])
+        self.history.append([t / 1e3, self.x / WIDTH, self.y / HEIGHT, self.energy, self.sight])
 
     def draw(self, screen):
 
@@ -235,7 +235,7 @@ class Food:
         self.end_time = 0
         self.ID = ID
 
-        self.history = [[self.ID, self.start_time, self.x, self.y, self.energy_content]]
+        self.history = [[self.ID, self.start_time /1e3, self.x/WIDTH, self.y/HEIGHT, self.energy_content]]
         self.history_list = ['ID', 't', 'x', 'y', 'energy_content']
 
     def draw(self, screen):
@@ -245,7 +245,7 @@ class Food:
     def remove(self, t):
         _make_empty_folder()
         self.end_time = t
-        self.history.append([self.ID, self.end_time, self.x, self.y, self.energy_content])
+        self.history.append([self.ID, self.end_time/1e3, self.x/WIDTH, self.y/HEIGHT, self.energy_content])
         self._save_history_in_a_single_file()
 
     def _save_history_in_multiple_files(self):

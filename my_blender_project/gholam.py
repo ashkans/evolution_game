@@ -16,16 +16,32 @@ from my_helpers import apply_material
 
 class Gholam(Bobject):
     def __init__(self, mat=None, **kwargs):
-        bpy.ops.mesh.primitive_cube_add(radius=.15, view_align=False, enter_editmode=False, location=(0, 0, 0), layers=(
-            True, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
-            False,
-            False, False, False, False))
-        super().__init__(objects=[bpy.context.active_object], **kwargs)
+        objects = []
+        bpy.ops.mesh.primitive_uv_sphere_add(size=.055, view_align=False, enter_editmode=False, location=(0, 0, .1))
+        objects.append(bpy.context.active_object)
+        bpy.ops.mesh.primitive_uv_sphere_add(size=.085, view_align=False, enter_editmode=False, location=(0, 0, 0))
+        objects.append(bpy.context.active_object)
+        bpy.ops.mesh.primitive_cone_add(radius1=1, radius2=0, depth=0.01, location=(0, 0, -0.025-0.025*random()))
+        this_obj = bpy.context.active_object
+        this_obj.show_transparent = True
+        objects.append(this_obj)
+        super().__init__(objects=objects, **kwargs)
 
         if mat is None:
             # mat = choice(bpy.data.materials.keys()[1:])
-            mat = 'creature_color9'
-        apply_material(self.ref_obj.children[0], mat)
+            mat = 'creature_color3'
+
+        apply_material(self.ref_obj.children[1], mat)
+        apply_material(self.ref_obj.children[2], mat)
+
+        material = bpy.data.materials.new("mymaterial")
+        material.diffuse_color = (0.6, 0.5, 0.5)
+
+ #       obj.show_transparent = True  # displays trans in viewport
+
+
+        apply_material(self.ref_obj.children[0], material)
+
 
     # mat ['clear', 'color1', 'color10', 'color2', 'color3', 'color4', 'color5', 'color6', 'color7', 'color8', 'color9',
     # 'creature_color1', 'creature_color10', 'creature_color2', 'creature_color3', 'creature_color4',
@@ -34,33 +50,28 @@ class Gholam(Bobject):
     # 'trans_color7', 'trans_color8', 'trans_color9']
 
     def from_log_file(self, file):
-        # df = pd.read_csv(file)
         my_data = np.genfromtxt(file, delimiter=',')
-        '''
-        for i, row in df.index[1:]:
-            st = df['t'].iloc[i-1] / 1000
-            et = df['t'].iloc[i] / 1000
-            x = df['x'].iloc[i]
-            y = df['y'].iloc[i]
-        '''
-        st, x, y, e = my_data[1][[1, 2, 3, 4]]
-        st /= 2
-        x = x / int(640 * 5) * 6 - 3
-        y = y / int(480 * 5) * 6 - 3
+        st, x, y, e, sight = my_data[1][[1, 2, 3, 4, 5]]
 
-        self.add_to_blender(appear_time=st / 1e3, animate=True)
-        self.move_to(0, 0, new_location=[x, y, 0.1])
+        x = x * 6 - 3
+        y = y * 6 - 3
+
+        self.add_to_blender(appear_time=st, animate=True)
+        self.move_to(0, 0, new_location=[x, y, 0.1], new_scale=e/200 + 0.5)
+
+
 
         for row in my_data[2:]:
-            et, x, y, e = row[[1, 2, 3, 4]]
-            et /= 2
+            et, x, y, e, sight = row[[1, 2, 3, 4, 5]]
 
-            x = x / int(640 * 5) * 6 - 3
-            y = y / int(480 * 5) * 6 - 3
-
-            self.move_to(start_time=st / 1e3, end_time=et / 1e3, new_location=[x, y, 0.1])
-
+            x = x * 6 - 3
+            y = y * 6 - 3
+            self.move_to(start_time=st, end_time=et, new_location=[x, y, 0.1])
+            self.sub_object_move_to(start_time=st, end_time=et, new_scale=e/200 + 0.5, child_ids=[1,2])
+            self.sub_object_move_to(start_time=st, end_time=et, new_scale=sight/640, child_ids=[0])
+            #self.ref_obj.children[0].scale = [1,1,1]#[1/s for s in self.intrinsic_scale]
             st = et
+        self.disappear(disappear_time=et)
 
     def gol_gasht(self, bounciness=None):
         x = 0
@@ -90,17 +101,34 @@ class Gholam(Bobject):
 
 
 class Food(Bobject):
-    def __init__(self):
-        def __init__(self, mat=None, **kwargs):
-            bpy.ops.mesh.primitive_cube_add(radius=.05, view_align=False, enter_editmode=False, location=(0, 0, 0),
-                                            layers=(True, False, False, False, False, False, False, False, False, False,
-                                                    False, False, False, False, False, False, False, False, False,
-                                                    False))
-            super().__init__(objects=[bpy.context.active_object], **kwargs)
+    def __init__(self, mat=None,  **kwargs):
+        bpy.ops.mesh.primitive_cube_add(radius=.05, view_align=False, enter_editmode=False, location=(0, 0, 0))
 
-            if mat is None:
-                mat = 'color2'
-            apply_material(self.ref_obj.children[0], mat)
+        super().__init__(objects=[bpy.context.active_object], **kwargs)
 
-    def from_log_file(self, file):
-        pass
+        if mat is None:
+            mat = 'color7'
+        apply_material(self.ref_obj.children[0], mat)
+
+    def from_single_log_file(self, my_data, id_tolook):
+
+        my_data = my_data[my_data[:,1] == id_tolook, :]
+        first_appearance = True
+        for row in my_data:
+            ID, t, x, y, energy_content = row[[1, 2, 3, 4, 5]]
+
+            if ID == id_tolook:
+                x = x * 6 - 3
+                y = y * 6 - 3
+                st = t
+                if first_appearance:
+                    self.add_to_blender(appear_time=st, animate=False, transition_time=0)
+                    self.move_to(st-1, st-1, new_location=[x, y, 0.1])
+                    first_appearance = False
+
+                else:
+                    self.move_to(start_time=st, end_time=et, new_location=[x, y, 0.1])
+                et = st
+
+        if not first_appearance:
+            self.disappear(disappear_time=et, animate=False)

@@ -4,12 +4,12 @@ import os
 import importlib
 import bpy
 
-BASE_PATH = r"C:\Users\ashka\Documents\git\evolution_game"
+BASE_PATH = r"C:\Users\ashkans\Documents\git\evolution_game"
 BASE_PATH_blender = os.path.join(BASE_PATH, "my_blender_project")
 sys.path.append(BASE_PATH_blender)
 
 import settings
-
+import numpy as np
 importlib.reload(settings)
 from settings import DEFAULT_SCENE_DURATION
 
@@ -26,13 +26,13 @@ from bobject import Bobject
 
 import gholam
 importlib.reload(gholam)
-from gholam import Gholam
+from gholam import Gholam, Food
 
 
 # from blobject import Blobject
 ###########################################################
 
-initialize_blender(total_duration=60)
+initialize_blender(total_duration=79)
 cam_bobj, cam_swivel = cam_and_swivel(
     cam_location=[0, -5, 11],
     cam_rotation_euler=[0.4, 0, 0],
@@ -51,13 +51,22 @@ floor = bpy.context.active_object
 floor_Bobject = Bobject(objects=[floor])
 #floor.color_shift()
 floor_Bobject.add_to_blender(appear_time=-1, animate=False)
-apply_material(floor_Bobject.ref_obj.children[0], 'color1')
+apply_material(floor_Bobject.ref_obj.children[0], 'color2')
 
 
 log_folder = os.path.join(BASE_PATH, 'log_files')
 
 koonderazan = []
-for i in range(72):
+for i in range(1): #61
+    print(i)
     koonderazan.append(Gholam())
-
     koonderazan[-1].from_log_file(os.path.join(log_folder, '%d_log.csv' % i))
+
+foods = []
+for i in range(3205): # 3205
+    file = os.path.join(log_folder, 'food_log.csv')
+    my_data = np.genfromtxt(file, delimiter=',')
+
+    print(i)
+    foods.append(Food())
+    foods[-1].from_single_log_file(my_data, i)
