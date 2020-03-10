@@ -29,6 +29,8 @@ SPEED = settings.SPEED
 DOMAIN_SCALE = settings.DOMAIN_SCALE
 BASE_WIDTH = settings.BASE_WIDTH
 BASE_HEIGHT = settings.BASE_HEIGHT
+LOG_FOLDER = settings.LOG_FOLDER
+
 
 def update(t, dt, pop, foods, width, height):
     """
@@ -106,7 +108,6 @@ def game_init(width, height):
 
 
 def game_exit(t, dt, pop, foods, width, height):
-
     if not os.path.exists(settings.LOG_FOLDER):
         os.makedirs(settings.LOG_FOLDER)
     # print(join(settings.LOG_FOLDER, 'food_log.csv'))
@@ -139,17 +140,27 @@ def runPyGame():
     dt = 1 / fps * SPEED  # dt is the time since last frame.
 
     pop, foods = game_init(width, height)
+    frameCount = 0
     while True:  # Loop forever!
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_exit(t, dt, pop, foods, width, height)
                 pygame.quit()
                 exit()
-
+        frameCount += 1
         update(t, dt, pop, foods, width, height)  # You can update/draw here, I've just moved the code for neatness.
         draw(screen, pop, foods, width, height)
         # draw_screen(screen, pop, foods, width, height)
-        dt = fpsClock.tick(fps) * SPEED
+
+        postprocessing = True
+        if postprocessing:
+            dt = 1000 / fps * SPEED
+
+            pygame.image.save(screen, join(LOG_FOLDER, "screenshot%d.JPEG" % frameCount))
+        else:
+            dt = fpsClock.tick(fps) * SPEED
+        print(dt)
         t += dt
 
 
