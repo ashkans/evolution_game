@@ -1,6 +1,6 @@
 import os
 
-SCALE = 2
+SCALE = 3
 DOMAIN_SCALE = 1
 SPEED = 10
 LOG_FOLDER = 'log_files'
