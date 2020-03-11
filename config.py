@@ -1,0 +1,16 @@
+SETTING = dict()
+
+
+SETTING['DISPLAY'] = dict(
+    DOMAIN_SIZE=(100, 100),
+    PARTICL_BASE_SIZE=1,
+    SCALE=dict(SPEED=1, SPACE=1),
+    WINDOW_RES=dict(WIDTH=840, HEIGHT=640),
+    SCREEN_RES=dict(WIDTH=600, HEIGHT=600, TOP=20, LEFT=20),
+    FPS=30
+)
+
+SETTING['FOOD'] = dict(INIT=100, RATE=100)
+
+SETTING['LOGGER'] = dict(FOLDER='log_file', ACTIVE=False)
+
