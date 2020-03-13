@@ -26,6 +26,7 @@ def getSurface(name='circle', res=128, color=(50, 50, 50)):
 
     if name == 'bob':
         surf1 = pygame.Surface((res, res))
+        #surf1.fill((255, 255, 255))
         surf1.set_colorkey((0, 0, 0))
 
         main_cricle_r = res / 2

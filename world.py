@@ -3,7 +3,7 @@ from os.path import join
 from random import randint
 from creature import Creature, Population, Foods
 import numpy as np
-from thing import Thing
+from thing import Thing, Block
 from helper import getColor
 
 
@@ -47,10 +47,16 @@ class World:
 
     def _gameInit(self):
         w, h = (int(self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']), int(self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT']))
+        self.things = pygame.sprite.Group()
+        for i in range(3):
+            self.things.add(Thing(speed=[0.1, 0.1], size=randint(30, 50), imgName='bob',
+                                  color=[randint(1, 255), randint(1, 255), randint(1, 255)],
+                                  pos=[randint(1, 200), randint(1, 200)]))
 
-        for i in range(200):
-            self.things.append(Thing(speed=[randint(10, 160)/1000, randint(10, 160)/1000], size=randint(10, 30), imgName='bob', color=[randint(1,255), randint(1,255), randint(1,255)]))
-            #self.things.append(Thing(speed=[0.18, 0.06], size=50, imgName='bob', pos=[randint(0,100), randint(0,100)]))
+        # self.things.append(Thing(speed=[0.18, 0.06], size=50, imgName='bob', pos=[randint(0,100), randint(0,100)]))
+
+        # self.blocks = pygame.sprite.Group()
+        # self.blocks.add(b)
 
     def _setup_window(self):
         # width, height = int(self.DISPLAY['WIDTH']), int(self.DISPLAY['HEIGHT'])
@@ -68,7 +74,7 @@ class World:
     def update(self):
 
         for thing in self.things:
-            thing.move(dt=self.dt, boundaries=self.boundries)
+            thing.update(dt=self.dt, boundaries=self.boundries)
         '''
         self.things[0].move(dt=1, boundaries=self.boundries)
         self.things[1].move(dt=1, boundaries=self.boundries)
@@ -82,8 +88,8 @@ class World:
         # self.foods.draw(self.surfaces['main'])
 
         # ===============================
-        for thing in self.things:
-            thing.draw(self.surfaces['main'])
+        self.things.draw(self.surfaces['main'])
+        #self.things.sprites()[0].draw(self.surfaces['main'])
 
         # ===============================
 
