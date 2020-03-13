@@ -24,6 +24,19 @@ def getSurface(name='circle', res=128, color=(50, 50, 50)):
         pygame.draw.circle(surf1, c, (int(res / 2), int(res / 2)), int(res / 2))
         return surf1  # this should be a surface
 
+    if name == 'bob':
+        surf1 = pygame.Surface((res, res))
+        surf1.set_colorkey((0, 0, 0))
+
+        main_cricle_r = res / 2
+        main_cricle_pos = (int(main_cricle_r), int(main_cricle_r))
+        small_circle_r = res / 6
+        small_circle_pos = (int(main_cricle_r*2- small_circle_r)), int(main_cricle_r)
+
+        pygame.draw.circle(surf1, c, main_cricle_pos, int(main_cricle_r))
+        pygame.draw.circle(surf1, (1, 1, 1), small_circle_pos, int(small_circle_r))
+        return surf1  # this should be a surface
+
 
 def getColor(c):
     if c == 'blue':
@@ -34,3 +47,4 @@ def getColor(c):
         rbg = (255, 255, 255)
 
     return rbg
+

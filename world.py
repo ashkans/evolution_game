@@ -48,9 +48,9 @@ class World:
     def _gameInit(self):
         w, h = (int(self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']), int(self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT']))
 
-        for i in range(10):
-            self.things.append(Thing(speed=[randint(1, 6), randint(1, 6)], size=randint(5, 20)))
-
+        for i in range(2):
+            self.things.append(Thing(speed=[randint(10, 160)/1000, randint(10, 160)/1000], size=randint(20, 20), imgName='bob', color=[randint(1,255), randint(1,255), randint(1,255)]))
+            #self.things.append(Thing(speed=[-0.3, 0], size=20, imgName='bob', pos=[randint(0,100),randint(0,100)]))
 
     def _setup_window(self):
         # width, height = int(self.DISPLAY['WIDTH']), int(self.DISPLAY['HEIGHT'])
@@ -68,7 +68,7 @@ class World:
     def update(self):
 
         for thing in self.things:
-            thing.move(dt=1, boundaries=self.boundries)
+            thing.move(dt=self.dt, boundaries=self.boundries)
         '''
         self.things[0].move(dt=1, boundaries=self.boundries)
         self.things[1].move(dt=1, boundaries=self.boundries)
