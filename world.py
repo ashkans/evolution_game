@@ -48,9 +48,9 @@ class World:
     def _gameInit(self):
         w, h = (int(self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']), int(self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT']))
 
-        for i in range(2):
-            self.things.append(Thing(speed=[randint(10, 160)/1000, randint(10, 160)/1000], size=randint(20, 20), imgName='bob', color=[randint(1,255), randint(1,255), randint(1,255)]))
-            #self.things.append(Thing(speed=[-0.3, 0], size=20, imgName='bob', pos=[randint(0,100),randint(0,100)]))
+        for i in range(200):
+            self.things.append(Thing(speed=[randint(10, 160)/1000, randint(10, 160)/1000], size=randint(10, 30), imgName='bob', color=[randint(1,255), randint(1,255), randint(1,255)]))
+            #self.things.append(Thing(speed=[0.18, 0.06], size=50, imgName='bob', pos=[randint(0,100), randint(0,100)]))
 
     def _setup_window(self):
         # width, height = int(self.DISPLAY['WIDTH']), int(self.DISPLAY['HEIGHT'])
@@ -156,7 +156,7 @@ class World:
         textRect = renderedText.get_rect()
 
         # set the center of the rectangular object.
-        print(location)
+
         textRect.topleft = (location[0], location[1])
 
         return renderedText, textRect

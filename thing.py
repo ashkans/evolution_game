@@ -25,7 +25,7 @@ class Thing:
         self.color = color
         self.imgName = imgName
 
-        self.img = getSurface(name=imgName, res=32, color=self.color).copy()
+        self.img = getSurface(name=imgName, res=512, color=self.color).copy()
 
         self.visible = True
         self.id = 0
@@ -38,6 +38,10 @@ class Thing:
 
         self.wall_check(boundaries['walls'])
         self.setAngleToSpeed()
+        #self.rotate(0.001, dt)
+
+    def rotate(self, sp, dt):
+        self.angle += sp * dt
 
     def setAngleToSpeed(self):
         if self.speed[0] != 0:
@@ -47,19 +51,15 @@ class Thing:
 
     def draw(self, surface):
         if self.visible:
-
-
-
-
             scale = self.size / self.img.get_width()
-            print(self.size)
-            print(self.img.get_width())
-            print(scale)
-            #s = pygame.transform.rotozoom(self.img, math.degrees(self.angle), scale)
-            s = pygame.transform.scale(self.img, (int(self.size), int(self.size)))
+
+            s = pygame.transform.rotozoom(self.img, math.degrees(self.angle), scale)
+
             s.set_colorkey(self.img.get_colorkey())
 
-            pos = [self.pos[0] - self.size / 2, self.pos[1] - self.size / 2]
+            size = s.get_width()
+
+            pos = [self.pos[0] - size / 2, self.pos[1] - size / 2]
             surface.blit(s, pos)
 
     # TODO: This should be more general, including a set of boundaries such as polygon, and circle
@@ -82,7 +82,7 @@ class Thing:
         elif xmin < left:
 
             c = xmin - left
-            print(c)
+
             self.pos[0] -= 2 * c
             self.speed[0] *= -1
 
