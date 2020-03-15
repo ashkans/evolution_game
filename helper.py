@@ -1,4 +1,5 @@
 import pygame
+from os.path import join
 
 
 def check_eat(pop, foods):
@@ -18,7 +19,6 @@ def getSurface(name='circle', res=128, color=(50, 50, 50)):
         c = color
 
     if name == 'circle':
-        s1d = 256
         surf1 = pygame.Surface((res, res))
         surf1.set_colorkey((0, 0, 0))
         pygame.draw.circle(surf1, c, (int(res / 2), int(res / 2)), int(res / 2))
@@ -26,16 +26,38 @@ def getSurface(name='circle', res=128, color=(50, 50, 50)):
 
     if name == 'bob':
         surf1 = pygame.Surface((res, res))
-        #surf1.fill((255, 255, 255))
+        # surf1.fill((255, 255, 255))
         surf1.set_colorkey((0, 0, 0))
 
         main_cricle_r = res / 2
         main_cricle_pos = (int(main_cricle_r), int(main_cricle_r))
         small_circle_r = res / 6
-        small_circle_pos = (int(main_cricle_r*2- small_circle_r)), int(main_cricle_r)
+        small_circle_pos = (int(main_cricle_r * 2 - small_circle_r)), int(main_cricle_r)
 
         pygame.draw.circle(surf1, c, main_cricle_pos, int(main_cricle_r))
         pygame.draw.circle(surf1, (1, 1, 1), small_circle_pos, int(small_circle_r))
+        return surf1  # this should be a surface
+
+    if name == 'square':
+        surf1 = pygame.Surface((res, res))
+        surf1.set_colorkey((0, 0, 0))
+        rect = pygame.Rect(0, 0, res, res)
+        pygame.draw.rect(surf1, c, rect, 0)
+
+        return surf1  # this should be a surface
+
+    if name == 'apple':
+        surf1 = pygame.Surface((res, res))
+        surf1 = pygame.image.load(join('assets', 'apple.png'))
+        surf1.set_colorkey((255, 255, 255))
+        rect = pygame.Rect(0, 0, res, res)
+        surf1 = pygame.transform.scale(surf1, (res, res))
+
+
+
+        #transColor = image.get_at((0, 0))
+        #image.set_colorkey(transColor)
+
         return surf1  # this should be a surface
 
 
@@ -48,4 +70,3 @@ def getColor(c):
         rbg = (255, 255, 255)
 
     return rbg
-

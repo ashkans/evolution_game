@@ -3,8 +3,9 @@ from os.path import join
 from random import randint
 from creature import Creature, Population, Foods
 import numpy as np
-from thing import Thing, Block
+from thing import Thing, Things
 from helper import getColor
+from food import Food, Foods
 
 
 class World:
@@ -28,7 +29,8 @@ class World:
         self.dt = 0
         self.boundries = {
             'walls': [0, 0, self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT'], self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']]}
-        self.things = []
+        self.things = Things()
+        self.foods = Foods()
         self._gameInit()
 
         self.frameCount = 0
@@ -47,11 +49,15 @@ class World:
 
     def _gameInit(self):
         w, h = (int(self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']), int(self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT']))
-        self.things = pygame.sprite.Group()
-        for i in range(3):
-            self.things.add(Thing(speed=[0.1, 0.1], size=randint(30, 50), imgName='bob',
+
+        for i in range(300):
+            self.things.add(Thing(speed=[randint(5, 30)/100, randint(5, 30)/100], size=randint(30, 50), imgName='bob',
                                   color=[randint(1, 255), randint(1, 255), randint(1, 255)],
                                   pos=[randint(1, 200), randint(1, 200)]))
+
+            self.foods.add(Food(imgName= 'apple', still=True, size=60, color=[randint(1, 255), randint(1, 255), randint(1, 255)],
+                                pos=[randint(1, 600), randint(1, 600)]))
+
 
         # self.things.append(Thing(speed=[0.18, 0.06], size=50, imgName='bob', pos=[randint(0,100), randint(0,100)]))
 
@@ -75,6 +81,9 @@ class World:
 
         for thing in self.things:
             thing.update(dt=self.dt, boundaries=self.boundries)
+
+        for food in self.foods:
+            food.update(dt=self.dt, boundaries=self.boundries)
         '''
         self.things[0].move(dt=1, boundaries=self.boundries)
         self.things[1].move(dt=1, boundaries=self.boundries)
@@ -88,8 +97,10 @@ class World:
         # self.foods.draw(self.surfaces['main'])
 
         # ===============================
+        self.foods.draw(self.surfaces['main'])
         self.things.draw(self.surfaces['main'])
-        #self.things.sprites()[0].draw(self.surfaces['main'])
+        # self.things.sprites()[0].draw(self.surfaces['main'])
+
 
         # ===============================
 

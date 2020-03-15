@@ -3,27 +3,9 @@ import math
 from helper import getColor, getSurface
 
 
-class Block(pygame.sprite.Sprite):
-
-    # Constructor. Pass in the color of the block,
-    # and its x and y position
-    def __init__(self, color, width, height):
-        # Call the parent class (Sprite) constructor
-        pygame.sprite.Sprite.__init__(self)
-
-        # Create an image of the block, and fill it with a color.
-        # This could also be an image loaded from the disk.
-        self.image = pygame.Surface([width, height])
-        self.image.fill(color)
-
-        # Fetch the rectangle object that has the dimensions of the image
-        # Update the position of this object by setting the values of rect.x and rect.y
-        self.rect = self.image.get_rect()
-
-
 class Thing(pygame.sprite.Sprite):
 
-    def __init__(self, pos=None, speed=None, angle=None, size=None, color=None, imgName=None):
+    def __init__(self, pos=None, speed=None, angle=None, size=None, color=None, imgName=None, still=None):
         pygame.sprite.Sprite.__init__(self)
 
         if pos is None:
@@ -38,6 +20,8 @@ class Thing(pygame.sprite.Sprite):
             color = [100, 255, 255]
         if imgName is None:
             imgName = 'circle'
+        if still is None:
+            still = False
 
         self.pos = pos
         self.speed = speed
@@ -45,27 +29,44 @@ class Thing(pygame.sprite.Sprite):
         self.size = size
         self.color = color
         self.imgName = imgName
+        self.still = still
 
         # self.rect = pygame.Rect(pos, (size, size))
-        self.origImage = getSurface(name=imgName, res=512, color=self.color).copy()
+        self.origImage = getSurface(name=imgName, res=48, color=self.color).copy()
         self.image = self.origImage.copy()
+
 
         self.visible = True
         self.id = 0
-        self.setAngleToSpeed()
+
+        if not self.still:
+            self.setAngleToSpeed()
 
     @property
     def rect(self):
         return self.image.get_rect(center=self.pos)
 
     def update(self, dt, boundaries):
+        if not self.still:
+            self._move(dt, boundaries)
 
+        self.otherUpdates(dt)
+        self._image_update()
+
+    def otherUpdates(self, dt):
+        pass
+
+    def _move(self, dt, boundaries):
+        # movement
         self.pos[0] += self.speed[0] * dt
         self.pos[1] += self.speed[1] * dt
 
-        self.wall_check(boundaries['walls'])
-        self.setAngleToSpeed()
+        if not self.still:
+            self.wall_check(boundaries['walls'])
+            self.setAngleToSpeed()
 
+    def _image_update(self):
+        # image update
         scale = self.size / self.origImage.get_width()
         self.image = pygame.transform.rotozoom(self.origImage, math.degrees(self.angle), scale)
         self.image.set_colorkey(self.origImage.get_colorkey())
@@ -113,3 +114,7 @@ class Thing(pygame.sprite.Sprite):
             c = ymax - bottom
             self.pos[1] -= 2 * c
             self.speed[1] *= -1
+
+
+class Things(pygame.sprite.Group):
+    pass
