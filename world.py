@@ -6,6 +6,7 @@ import numpy as np
 from thing import Thing, Things
 from helper import getColor
 from food import Food, Foods
+from creatureRefactor import Creature, Creatures
 
 
 class World:
@@ -31,6 +32,8 @@ class World:
             'walls': [0, 0, self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT'], self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']]}
         self.things = Things()
         self.foods = Foods()
+        self.creatures = Creatures()
+
         self._gameInit()
 
         self.frameCount = 0
@@ -50,14 +53,15 @@ class World:
     def _gameInit(self):
         w, h = (int(self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']), int(self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT']))
 
-        for i in range(300):
-            self.things.add(Thing(speed=[randint(5, 30)/100, randint(5, 30)/100], size=randint(30, 50), imgName='bob',
-                                  color=[randint(1, 255), randint(1, 255), randint(1, 255)],
-                                  pos=[randint(1, 200), randint(1, 200)]))
+        for i in range(50):
+            self.creatures.add(
+                Creature(speed=[randint(1, 30) / 150, randint(1, 30) / 150], size=randint(30, 50), imgName='bob',
+                         color=[randint(1, 255), randint(1, 255), randint(1, 255)],
+                         pos=[randint(1, 200), randint(1, 200)]))
 
-            self.foods.add(Food(imgName= 'apple', still=True, size=60, color=[randint(1, 255), randint(1, 255), randint(1, 255)],
-                                pos=[randint(1, 600), randint(1, 600)]))
-
+            self.foods.add(
+                Food(imgName='apple', still=True, size=30, color=[randint(1, 255), randint(1, 255), randint(1, 255)],
+                     pos=[randint(1, 600), randint(1, 600)]))
 
         # self.things.append(Thing(speed=[0.18, 0.06], size=50, imgName='bob', pos=[randint(0,100), randint(0,100)]))
 
@@ -79,8 +83,8 @@ class World:
 
     def update(self):
 
-        for thing in self.things:
-            thing.update(dt=self.dt, boundaries=self.boundries)
+        for creature in self.creatures:
+            creature.update(dt=self.dt, boundaries=self.boundries)
 
         for food in self.foods:
             food.update(dt=self.dt, boundaries=self.boundries)
@@ -98,9 +102,8 @@ class World:
 
         # ===============================
         self.foods.draw(self.surfaces['main'])
-        self.things.draw(self.surfaces['main'])
+        self.creatures.draw(self.surfaces['main'])
         # self.things.sprites()[0].draw(self.surfaces['main'])
-
 
         # ===============================
 

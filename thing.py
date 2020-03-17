@@ -1,11 +1,13 @@
 import pygame
 import math
 from helper import getColor, getSurface
+from random import random
 
 
 class Thing(pygame.sprite.Sprite):
 
-    def __init__(self, pos=None, speed=None, angle=None, size=None, color=None, imgName=None, still=None):
+    def __init__(self, pos=None, speed=None, angle=None, size=None, color=None, imgName=None, still=None,
+                 rotationRate=None):
         pygame.sprite.Sprite.__init__(self)
 
         if pos is None:
@@ -22,6 +24,8 @@ class Thing(pygame.sprite.Sprite):
             imgName = 'circle'
         if still is None:
             still = False
+        if rotationRate is None:
+            rotationRate = 0.0005
 
         self.pos = pos
         self.speed = speed
@@ -30,13 +34,12 @@ class Thing(pygame.sprite.Sprite):
         self.color = color
         self.imgName = imgName
         self.still = still
+        self.rotationRate = rotationRate
 
         # self.rect = pygame.Rect(pos, (size, size))
-        self.origImage = getSurface(name=imgName, res=48, color=self.color).copy()
+        self.origImage = getSurface(name=imgName, res=512, color=self.color).copy()
         self.image = self.origImage.copy()
 
-
-        self.visible = True
         self.id = 0
 
         if not self.still:
@@ -46,15 +49,26 @@ class Thing(pygame.sprite.Sprite):
     def rect(self):
         return self.image.get_rect(center=self.pos)
 
-    def update(self, dt, boundaries):
+    def update(self, dt, boundaries, **kwargs):
         if not self.still:
             self._move(dt, boundaries)
-
-        self.otherUpdates(dt)
         self._image_update()
+        self.otherUpdates(dt, **kwargs)
 
     def otherUpdates(self, dt):
         pass
+
+    @property
+    def _velIntensity(self):
+        return (self.speed[0] ** 2 + self.speed[1] ** 2) ** 0.5
+
+    @property
+    def _velAngle(self):
+        if self.speed[0] != 0:
+            ang = math.atan(self.speed[1] / self.speed[0])
+        if self.speed[0] < 0:
+            ang += math.pi
+        return ang
 
     def _move(self, dt, boundaries):
         # movement
@@ -71,7 +85,9 @@ class Thing(pygame.sprite.Sprite):
         self.image = pygame.transform.rotozoom(self.origImage, math.degrees(self.angle), scale)
         self.image.set_colorkey(self.origImage.get_colorkey())
 
-    def rotate(self, sp, dt):
+    def rotate(self, sp=None, dt=0):
+        if sp is None:
+            sp = self.rotationRate
         self.angle += sp * dt
 
     def setAngleToSpeed(self):
@@ -79,9 +95,6 @@ class Thing(pygame.sprite.Sprite):
             self.angle = -1 * math.atan(self.speed[1] / self.speed[0])
         if self.speed[0] < 0:
             self.angle += math.pi
-
-    def draw(self, surface):
-        surface.blit(self.image, self.rect)
 
     # TODO: This should be more general, including a set of boundaries such as polygon, and circle
     def wall_check(self, boundary):
