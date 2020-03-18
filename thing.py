@@ -37,8 +37,11 @@ class Thing(pygame.sprite.Sprite):
         self.rotationRate = rotationRate
 
         # self.rect = pygame.Rect(pos, (size, size))
-        self.origImage = getSurface(name=imgName, res=512, color=self.color).copy()
-        self.image = self.origImage.copy()
+        self.origImage = getSurface(name=imgName, res=32, color=self.color).copy()
+
+        scale = self.size / self.origImage.get_width()
+        self.image = pygame.transform.rotozoom(self.origImage, math.degrees(self.angle), scale)
+        self.image.set_colorkey(self.origImage.get_colorkey())
 
         self.id = 0
 
@@ -66,8 +69,11 @@ class Thing(pygame.sprite.Sprite):
     def _velAngle(self):
         if self.speed[0] != 0:
             ang = math.atan(self.speed[1] / self.speed[0])
+        else:
+            ang = 0
         if self.speed[0] < 0:
             ang += math.pi
+
         return ang
 
     def _move(self, dt, boundaries):

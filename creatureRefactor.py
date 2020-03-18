@@ -3,6 +3,8 @@ from random import random
 from creature_ai import ai_wrapper
 from creature_eye import eye_wrapper
 import pygame
+from random import randint
+from copy import deepcopy
 
 
 class Creature(Thing):
@@ -45,6 +47,12 @@ class Creature(Thing):
         self.total_ec = self.basic_ec + self.seeing_ec + self.speed_ec
         self.energy = 100
 
+    def eat(self, energy):
+        self.energy += energy
+
+    def die(self):
+        self.kill()
+
     def otherUpdates(self, dt, **kwargs):
         ai_wrapper(self)  # This updates the speed
         # eye_wrapper(self, kwargs['creatures'], kwargs['foods'])  # this should become just the locations instead of
@@ -58,7 +66,9 @@ class Creature(Thing):
 
         if self.energy <= 0:
             self.die()
-        print(self.energy)
+        elif self.energy > 100:
+            self.regenerateMonosexual()
+            self.energy = 50
 
     def _image_update(self):
         Thing._image_update(self)
@@ -71,14 +81,34 @@ class Creature(Thing):
 
         lifeRecFull = pygame.Rect((0, 0), (w * self.energy / 100, h / 10))
         pygame.draw.rect(lifeSubSurface, [255, 0, 0], lifeRecFull, 0)
+
         # pygame.draw.circle(self.image.subsurface(, [100, 0, 0], (0, 0), 10)
 
-    def eat(self, energy):
-        self.energy += energy
+    def regenerateMonosexual(self):  # TODO This should be moved to a new py file
+        group = self.groups()[0]
 
-    def die(self):
-        self.kill()
+        offSpring = Creature(color=self.color)
+
+        # TODO should set with a get/set routin in the creature class which consist of the gens.
+        offSpring.pos = self.pos.copy()
+        offSpring.speed = self.speed.copy()
+        offSpring.imgName = self.imgName
+        offSpring.size = self.size
+
+        offSpring.energy = 50
+        offSpring.speed[0] += (random() - 0.5) / 100
+        offSpring.speed[1] += (random() - 0.5) / 100
+
+        offSpring.pos[0] += randint(-50, 50)
+        offSpring.pos[1] += randint(-50, 50)
+
+        # mutation
+
+        group.add(offSpring)
 
 
 class Creatures(Things):
-    pass
+    def check_eat(self, foods):
+        collide_dict = pygame.sprite.groupcollide(foods, self, False, False)
+        for food, creature_who_eat in collide_dict.items():
+            food.eaten_by = creature_who_eat

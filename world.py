@@ -53,12 +53,12 @@ class World:
     def _gameInit(self):
         w, h = (int(self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']), int(self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT']))
 
-        for i in range(50):
+        for i in range(1):
             self.creatures.add(
-                Creature(speed=[randint(1, 30) / 150, randint(1, 30) / 150], size=randint(30, 50), imgName='bob',
-                         color=[randint(1, 255), randint(1, 255), randint(1, 255)],
+                Creature(speed=[randint(1, 30) / 250, randint(1, 30) / 250], size=randint(30, 50), imgName='bob',
+                         color=[255, 0, 0],
                          pos=[randint(1, 200), randint(1, 200)]))
-
+        for i in range(450):
             self.foods.add(
                 Food(imgName='apple', still=True, size=30, color=[randint(1, 255), randint(1, 255), randint(1, 255)],
                      pos=[randint(1, 600), randint(1, 600)]))
@@ -88,6 +88,9 @@ class World:
 
         for food in self.foods:
             food.update(dt=self.dt, boundaries=self.boundries)
+
+        self.creatures.check_eat(self.foods)
+        self.foods.add_food(self.dt)
         '''
         self.things[0].move(dt=1, boundaries=self.boundries)
         self.things[1].move(dt=1, boundaries=self.boundries)

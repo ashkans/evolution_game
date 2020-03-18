@@ -11,7 +11,7 @@ SETTING['DISPLAY'] = dict(
     FPS=60
 )
 
-SETTING['FOOD'] = dict(INIT=100, RATE=100)
+SETTING['FOOD'] = dict(INIT=100, RATE=25)
 
 SETTING['LOGGER'] = dict(FOLDER='log_file', ACTIVE=False)
 
