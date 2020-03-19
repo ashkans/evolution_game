@@ -37,6 +37,6 @@ class Foods(Things):
         x = randint(1, SETTING['DISPLAY']['MAIN_SCREEN_RES']['WIDTH'])
         y = randint(1, SETTING['DISPLAY']['MAIN_SCREEN_RES']['HEIGHT'])
 
-        if self.timeFromLastSpawn > SETTING['FOOD']['RATE']:
-            self.add(Food(imgName='apple', still=True, size=30, pos=[x, y]))
+        if self.timeFromLastSpawn > SETTING['FOOD']['APPLE']['RATE']:
+            self.add(Food(imgName='apple', still=True, size=SETTING['FOOD']['APPLE']['SIZE'], pos=[x, y]))
             self.timeFromLastSpawn = 0

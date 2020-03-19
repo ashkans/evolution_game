@@ -47,6 +47,10 @@ class Creature(Thing):
         self.total_ec = self.basic_ec + self.seeing_ec + self.speed_ec
         self.energy = 100
 
+    @property
+    def intSight(self):
+        return int(self.sight)
+
     def eat(self, energy):
         self.energy += energy
 
@@ -58,7 +62,7 @@ class Creature(Thing):
         # eye_wrapper(self, kwargs['creatures'], kwargs['foods'])  # this should become just the locations instead of
         # the whole things.
 
-        self.seeing_ec = self.sight / 5e3
+        self.seeing_ec = self.sight / 5e4
         self.speed_ec = self._velIntensity / 1e1
         self.total_ec = (self.basic_ec + self.seeing_ec + self.speed_ec) * dt
 
@@ -77,6 +81,7 @@ class Creature(Thing):
         h = self.image.get_height()
         lifeRec = pygame.Rect((0, 0), (w, h / 10))
         lifeSubSurface = self.image.subsurface(lifeRec)
+
         lifeSubSurface.fill([100, 100, 100])
 
         lifeRecFull = pygame.Rect((0, 0), (w * self.energy / 100, h / 10))
@@ -87,13 +92,13 @@ class Creature(Thing):
     def regenerateMonosexual(self):  # TODO This should be moved to a new py file
         group = self.groups()[0]
 
-        offSpring = Creature(color=self.color)
+        offSpring = Creature(color=self.color, size=self.size)
 
         # TODO should set with a get/set routin in the creature class which consist of the gens.
         offSpring.pos = self.pos.copy()
         offSpring.speed = self.speed.copy()
         offSpring.imgName = self.imgName
-        offSpring.size = self.size
+        offSpring.sight = self.sight
 
         offSpring.energy = 50
         offSpring.speed[0] += (random() - 0.5) / 100
@@ -109,6 +114,21 @@ class Creature(Thing):
 
 class Creatures(Things):
     def check_eat(self, foods):
-        collide_dict = pygame.sprite.groupcollide(foods, self, False, False)
+        collide_dict = pygame.sprite.groupcollide(foods, self, False, False, pygame.sprite.collide_circle_ratio(0.7))
         for food, creature_who_eat in collide_dict.items():
             food.eaten_by = creature_who_eat
+
+    def drawSights(self, surface):
+        # draw sights
+        for c in self:
+            print(c.sight)
+            s = pygame.Surface((c.intSight * 2, c.intSight * 2), pygame.SRCALPHA)  # per-pixel alpha
+
+            pygame.draw.circle(s, [0, 0, 0, 10], [c.intSight, c.intSight], c.intSight, 0)
+            centerPos = [c.intPos[0] - c.intSight, c.intPos[1] - c.intSight]
+            surface.blit(s, centerPos)
+        # Things.draw(surface)
+
+
+
+

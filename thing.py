@@ -37,7 +37,7 @@ class Thing(pygame.sprite.Sprite):
         self.rotationRate = rotationRate
 
         # self.rect = pygame.Rect(pos, (size, size))
-        self.origImage = getSurface(name=imgName, res=32, color=self.color).copy()
+        self.origImage = getSurface(name=imgName, res=16, color=self.color).copy()
 
         scale = self.size / self.origImage.get_width()
         self.image = pygame.transform.rotozoom(self.origImage, math.degrees(self.angle), scale)
@@ -47,7 +47,9 @@ class Thing(pygame.sprite.Sprite):
 
         if not self.still:
             self.setAngleToSpeed()
-
+    @property
+    def intPos(self):
+        return [int(self.pos[0]), self.pos[1]]
     @property
     def rect(self):
         return self.image.get_rect(center=self.pos)

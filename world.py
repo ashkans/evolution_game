@@ -7,6 +7,7 @@ from thing import Thing, Things
 from helper import getColor
 from food import Food, Foods
 from creatureRefactor import Creature, Creatures
+from config import SETTING
 
 
 class World:
@@ -53,14 +54,16 @@ class World:
     def _gameInit(self):
         w, h = (int(self.DISPLAY['MAIN_SCREEN_RES']['WIDTH']), int(self.DISPLAY['MAIN_SCREEN_RES']['HEIGHT']))
 
-        for i in range(1):
+        for i in range(10):
             self.creatures.add(
-                Creature(speed=[randint(1, 30) / 250, randint(1, 30) / 250], size=randint(30, 50), imgName='bob',
+                Creature(speed=[randint(-30, 30) / 500, randint(-30, 30) / 500], size=10, imgName='bob',
                          color=[255, 0, 0],
-                         pos=[randint(1, 200), randint(1, 200)]))
-        for i in range(450):
+                         pos=[randint(1, 600), randint(1, 600)],
+                         sight=50))
+        for i in range(SETTING['FOOD']['APPLE']['INIT']):
             self.foods.add(
-                Food(imgName='apple', still=True, size=30, color=[randint(1, 255), randint(1, 255), randint(1, 255)],
+                Food(imgName='apple', still=True, size=SETTING['FOOD']['APPLE']['SIZE'],
+                     color=[randint(1, 255), randint(1, 255), randint(1, 255)],
                      pos=[randint(1, 600), randint(1, 600)]))
 
         # self.things.append(Thing(speed=[0.18, 0.06], size=50, imgName='bob', pos=[randint(0,100), randint(0,100)]))
@@ -105,6 +108,7 @@ class World:
 
         # ===============================
         self.foods.draw(self.surfaces['main'])
+        self.creatures.drawSights(self.surfaces['main'])
         self.creatures.draw(self.surfaces['main'])
         # self.things.sprites()[0].draw(self.surfaces['main'])
 
@@ -156,9 +160,9 @@ class World:
 
             self.frameCount += 1
 
-            self.update()  # You can update/draw here, I've just moved the code for neatness.
+            self.update()
             self.draw()
-            # draw_screen(screen, pop, foods, width, height)
+
             self._get_dt()
 
             self.t += self.dt
