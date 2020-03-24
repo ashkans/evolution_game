@@ -33,10 +33,15 @@ class Foods(Things):
         self.timeFromLastSpawn = 0
 
     def add_food(self, dt):
-        self.timeFromLastSpawn += dt
-        x = randint(1, SETTING['DISPLAY']['MAIN_SCREEN_RES']['WIDTH'])
-        y = randint(1, SETTING['DISPLAY']['MAIN_SCREEN_RES']['HEIGHT'])
 
-        if self.timeFromLastSpawn > SETTING['FOOD']['APPLE']['RATE']:
-            self.add(Food(imgName='apple', still=True, size=SETTING['FOOD']['APPLE']['SIZE'], pos=[x, y]))
-            self.timeFromLastSpawn = 0
+        self.timeFromLastSpawn += dt
+
+
+
+        foodRate = SETTING['FOOD']['APPLE']['RATE']
+        if self.timeFromLastSpawn > foodRate:
+
+            for i in range(self.timeFromLastSpawn // foodRate):
+                pos = [randint(1, SETTING['WORLD']['HEIGHT']), randint(1, SETTING['WORLD']['WIDTH'])]
+                self.add(Food(imgName='apple', still=True, size=SETTING['FOOD']['APPLE']['SIZE'], pos=pos))
+            self.timeFromLastSpawn = self.timeFromLastSpawn % foodRate

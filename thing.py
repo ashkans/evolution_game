@@ -37,7 +37,7 @@ class Thing(pygame.sprite.Sprite):
         self.rotationRate = rotationRate
 
         # self.rect = pygame.Rect(pos, (size, size))
-        self.origImage = getSurface(name=imgName, res=16, color=self.color).copy()
+        self.origImage = getSurface(name=imgName, res=128, color=self.color).copy()
 
         scale = self.size / self.origImage.get_width()
         self.image = pygame.transform.rotozoom(self.origImage, math.degrees(self.angle), scale)
@@ -47,9 +47,11 @@ class Thing(pygame.sprite.Sprite):
 
         if not self.still:
             self.setAngleToSpeed()
+
     @property
     def intPos(self):
         return [int(self.pos[0]), self.pos[1]]
+
     @property
     def rect(self):
         return self.image.get_rect(center=self.pos)
@@ -57,7 +59,7 @@ class Thing(pygame.sprite.Sprite):
     def update(self, dt, boundaries, **kwargs):
         if not self.still:
             self._move(dt, boundaries)
-        self._image_update()
+        # self._image_update()
         self.otherUpdates(dt, **kwargs)
 
     def otherUpdates(self, dt):
@@ -87,9 +89,11 @@ class Thing(pygame.sprite.Sprite):
             self.wall_check(boundaries['walls'])
             self.setAngleToSpeed()
 
-    def _image_update(self):
+    def image_update(self, zoom):
+
         # image update
-        scale = self.size / self.origImage.get_width()
+        self.setAngleToSpeed()
+        scale = self.size / self.origImage.get_width() / zoom
         self.image = pygame.transform.rotozoom(self.origImage, math.degrees(self.angle), scale)
         self.image.set_colorkey(self.origImage.get_colorkey())
 
@@ -138,4 +142,30 @@ class Thing(pygame.sprite.Sprite):
 
 
 class Things(pygame.sprite.Group):
-    pass
+    def draw(self, surface, currentViewSprite):
+        sprites = self.sprites()
+        surface_blit = surface.blit
+        visibleSprites = pygame.sprite.spritecollide(currentViewSprite, sprites, False)
+
+        W = surface.get_width()
+        H = surface.get_height()
+
+        w = currentViewSprite.rect.width
+        h = currentViewSprite.rect.height
+
+        wr = w / W
+        hr = h / H
+
+
+
+        for spr in visibleSprites:
+            spr.image_update(zoom=wr)
+            rect = pygame.Rect(spr.rect)
+            currentViewRect = pygame.Rect(currentViewSprite)
+
+            rect.center = ((rect.centerx - currentViewRect.top) / hr,
+                           (rect.centery - currentViewRect.left) / wr)
+
+            self.spritedict[spr] = surface_blit(spr.image, rect)
+
+        self.lostsprites = []

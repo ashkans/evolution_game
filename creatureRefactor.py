@@ -17,7 +17,7 @@ class Creature(Thing):
         Thing.__init__(self, **kwargs)
 
         if ai is None:
-            ai = 'Test'
+            ai = 'donkey'
         if sight is None:
             sight = 0
 
@@ -26,12 +26,6 @@ class Creature(Thing):
 
         if basic_ec is None:
             basic_ec = 0
-
-        if seeing_ec is None:
-            seeing_ec = 0
-
-        if speed_ec is None:
-            speed_ec = 0
 
         self.energy = energy
         self.ai = ai
@@ -42,9 +36,7 @@ class Creature(Thing):
 
         # Energy consumptions
         self.basic_ec = basic_ec
-        self.seeing_ec = seeing_ec
-        self.speed_ec = speed_ec
-        self.total_ec = self.basic_ec + self.seeing_ec + self.speed_ec
+
         self.energy = 100
 
     @property
@@ -59,14 +51,10 @@ class Creature(Thing):
 
     def otherUpdates(self, dt, **kwargs):
         ai_wrapper(self)  # This updates the speed
-        # eye_wrapper(self, kwargs['creatures'], kwargs['foods'])  # this should become just the locations instead of
+        eye_wrapper(self, kwargs['creatures'], kwargs['foods'])  # this should become just the locations instead of
         # the whole things.
 
-        self.seeing_ec = self.sight / 5e4
-        self.speed_ec = self._velIntensity / 1e1
-        self.total_ec = (self.basic_ec + self.seeing_ec + self.speed_ec) * dt
-
-        self.energy -= self.total_ec
+        self.energy -= self.total_ec * dt
 
         if self.energy <= 0:
             self.die()
@@ -74,8 +62,21 @@ class Creature(Thing):
             self.regenerateMonosexual()
             self.energy = 50
 
-    def _image_update(self):
-        Thing._image_update(self)
+    @property
+    def seeing_ec(self):
+        return self.sight / 5e4
+
+    @property
+    def speed_ec(self):
+        return self._velIntensity ** 2 * 5
+
+
+    @property
+    def total_ec(self):
+        return self.basic_ec + self.seeing_ec + self.speed_ec
+
+    def image_update(self, zoom):
+        Thing.image_update(self, zoom)
 
         w = self.image.get_width()
         h = self.image.get_height()
@@ -98,14 +99,11 @@ class Creature(Thing):
         offSpring.pos = self.pos.copy()
         offSpring.speed = self.speed.copy()
         offSpring.imgName = self.imgName
-        offSpring.sight = self.sight
+        offSpring.sight = max(self.sight + (random() - 0.5) / 0.1, 3)
 
         offSpring.energy = 50
-        offSpring.speed[0] += (random() - 0.5) / 100
-        offSpring.speed[1] += (random() - 0.5) / 100
-
-        offSpring.pos[0] += randint(-50, 50)
-        offSpring.pos[1] += randint(-50, 50)
+        offSpring.speed[0] += (random() - 0.5) / 10
+        offSpring.speed[1] += (random() - 0.5) / 10
 
         # mutation
 
@@ -118,17 +116,29 @@ class Creatures(Things):
         for food, creature_who_eat in collide_dict.items():
             food.eaten_by = creature_who_eat
 
-    def drawSights(self, surface):
+    def drawSights(self, surface, currentViewSprite):
         # draw sights
-        for c in self:
-            print(c.sight)
-            s = pygame.Surface((c.intSight * 2, c.intSight * 2), pygame.SRCALPHA)  # per-pixel alpha
+        visibleSprites = pygame.sprite.spritecollide(currentViewSprite, self, False)
 
-            pygame.draw.circle(s, [0, 0, 0, 10], [c.intSight, c.intSight], c.intSight, 0)
-            centerPos = [c.intPos[0] - c.intSight, c.intPos[1] - c.intSight]
-            surface.blit(s, centerPos)
-        # Things.draw(surface)
+        W = surface.get_width()
+        H = surface.get_height()
 
+        w = currentViewSprite.rect.width
+        h = currentViewSprite.rect.height
 
+        wr = w / W
+        hr = h / H
 
+        for spr in visibleSprites:
+            size = (spr.intSight * 2 / hr, spr.intSight * 2 / wr)
+            R = int(spr.intSight / hr)
+            s = pygame.Surface(size, pygame.SRCALPHA)  # per-pixel alpha
 
+            pygame.draw.circle(s, [0, 0, 0, 10], [R, R], R, 0)
+
+            rect = pygame.Rect((0, 0), size)
+            rect.center = spr.rect.center
+
+            currentViewRect = pygame.Rect(currentViewSprite)
+            rect.center = ((rect.centerx - currentViewRect.top) / hr, (rect.centery - currentViewRect.left) / wr)
+            surface.blit(s, rect)
